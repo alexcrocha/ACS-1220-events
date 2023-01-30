@@ -1,18 +1,24 @@
 """Create database models to represent tables."""
+import datetime
 from events_app import db
 from sqlalchemy.orm import backref
 
-# TODO: Create a model called `Guest` with the following fields:
+# Create a model called `Guest` with the following fields:
 # - id: primary key
 # - name: String column
 # - email: String column
 # - phone: String column
 # - events_attending: relationship to "Event" table with a secondary table
 
+
 class Guest(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50))
+    email = db.Column(db.String(50))
+    phone = db.Column(db.String(50))
+    events_attending = db.relationship('Event', secondary='guest_event', back_populates='guests')
 
-# TODO: Create a model called `Event` with the following fields:
+# Create a model called `Event` with the following fields:
 # - id: primary key
 # - title: String column
 # - description: String column
@@ -24,9 +30,17 @@ class Guest(db.Model):
 
 class Event(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(150))
+    description = db.Column(db.String(50))
+    date_and_time = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    guests = db.relationship('Guest', secondary='guest_event', back_populates='events_attending')
+    # event_type = db.Column(db.Enum('Party', 'Study', 'Networking', name='event_type'))
 
-# TODO: Create a table `guest_event_table` with the following columns:
+# Create a table `guest_event_table` with the following columns:
 # - event_id: Integer column (foreign key)
 # - guest_id: Integer column (foreign key)
 
-guest_event_table = None
+guest_event_table = db.Table('guest_event',
+    db.Column('event_id', db.Integer, db.ForeignKey('event.id')),
+    db.Column('guest_id', db.Integer, db.ForeignKey('guest.id'))
+)
